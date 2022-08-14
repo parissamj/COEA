@@ -1,5 +1,7 @@
 from ssl import PEM_cert_to_DER_cert
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
@@ -9,12 +11,11 @@ import collections
 import pylab
 import datetime
 import re
-#from plot_basemap import plot_basemap
 import time
 from get_all_post_2005_well_data import get_tight_oil_wells
 from map_to_drive import map_to_drive #path to Project Data folder
 
-source_sheet = 'C:/Users/desktop/Alex/project Data_new/OPGEE/welldata' #must be .xlsx
+source_sheet = map_to_drive() + 'Project Data/OPGEE/welldata' #must be .xlsx
 output_sheet = source_sheet + "-output.xlsx"
 
 def get_all_monthly_facility_data(year_month, from_to_facility,facility_connection_dates):
@@ -28,7 +29,7 @@ def get_all_monthly_facility_data(year_month, from_to_facility,facility_connecti
 	all_facility_data = collections.OrderedDict() #Getting data from the csv referenced to facilityID
 	print ("!!!!!!", all_facility_data)
 
-	Battery_FFV_folder = map_to_drive() + "/Project Data_new/AER/facility_volumetrics/"
+	Battery_FFV_folder = map_to_drive() + "/Project Data/AER/facility_volumetrics/"
 	Battery_FFV_File = "Vol_" + year_month + ".csv"
 
 	Battery_FFV = Battery_FFV_folder + Battery_FFV_File + "/" + Battery_FFV_File
@@ -107,7 +108,6 @@ def get_all_monthly_facility_data(year_month, from_to_facility,facility_connecti
 def AB_formation_facility_list(from_to_facility, well_data, facility_to_well, connected_wells, all_facility_data, facility_data_headings):
 
 	#takes in the from_to_facilities and the formation well data to determing which facilities are connected to project wells
-
 
 	timer = time.time()
 	#facility type index 
@@ -196,30 +196,18 @@ def get_formations_facility_data(all_facility_data, facility_data_headings, form
 	timer = time.time()
 
 	if formation_facility_list == -1:
-		#print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-
-		#WE ARE LOOKING AT ALL FACILITIES!!
-
 		formation_facility_list = all_facility_data
 
 	if len(formation_facility_list) == 0:
-		#print("------------------LENGTH IS ZERO-----------------------------------")
-
-		#WE COULD NOT FIND ANY FACILIIES
-
 		formation_facility_list = []
 
 	for facility in formation_facility_list:
-
 		if facility in selected_facility_data:
-
 			selected_facility_data[facility].extend(all_facility_data[facility])
 			#print("shshshshshshshshshshshshshshshshshshshs")
 
 		if facility not in selected_facility_data:
-			
 			selected_facility_data[facility] = all_facility_data[facility]
-			#print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
 	#print(selected_facility_data)
 
 
@@ -259,8 +247,6 @@ def gas_plant_from_facility(formation_facility_list, from_to_facility, facility_
 	return formation_facility_list
 
 def AB_facility_data_summary(facility_data_headings, selected_facility_data, facility_summary):
-
-	
 	#takes in the selected facility data and organises it by date and activity_product type
 
 	print('\nCalculating All AB Facility Summary Data')
@@ -274,50 +260,32 @@ def AB_facility_data_summary(facility_data_headings, selected_facility_data, fac
 	Volume_index = facility_data_headings.index('Volume')
 
 	if 'ALL' not in facility_summary:
-
 		#make an entry for the total facility data 
-
 		facility_summary['ALL'] = collections.OrderedDict()
 
 	for facility in selected_facility_data:
-		
 		for entry in range(0,len(selected_facility_data[facility])):
-
 			#print(selected_facility_data[facility][entry])
-
 			year_month = selected_facility_data[facility][entry][ProductionMonth_index]
-
 			if year_month not in facility_summary['ALL']:
-
 				facility_summary['ALL'][year_month] = collections.OrderedDict()
-
 
 			Activity_Product = str(selected_facility_data[facility][entry][ActivityID_index]) + ' ' + str(selected_facility_data[facility][entry][ProductID_index])
 
 			try:
-
 				if Activity_Product not in facility_summary['ALL'][year_month]:
-
 					facility_summary['ALL'][year_month][Activity_Product] = float(selected_facility_data[facility][entry][Volume_index])
-
 					list_of_all_activites.append(Activity_Product)
-
 				else:
-
 					facility_summary['ALL'][year_month][Activity_Product] = facility_summary['ALL'][year_month][Activity_Product] + float(selected_facility_data[facility][entry][Volume_index])
 
 			except:
-
-				pass
+				continue
 	#print ("-------------------------AB facility summary:-------------------------\n")
 	#print(facility_summary)
 
 
 	print('Computational Time (s): ' + "%.4f" %(time.time() - timer))
-	
-	#print('\n')
-	#print out of all activities 
-	#print(list_of_all_activites)
 
 	return facility_summary
 
@@ -338,6 +306,7 @@ def single_facility_OPGEE(facility_summary, OPGEE_data, facility_to_well, geosco
 	#print (facility_summary)
 
 	for facility in facility_summary:
+		print('working')
 		#if 'BT' in facility:
 		if len(facility_summary[facility]) > 0:
 			#print("-----------------the facility is:---------------------\n")
@@ -377,13 +346,11 @@ def single_facility_OPGEE(facility_summary, OPGEE_data, facility_to_well, geosco
 								well_to_fac_type[well].append(fac_type)
 								well_to_fac_name[well].append(facility)
 								well_cumulative[well] = [sum(x) for x in zip(well_cumulative[well],period_cumulative)]
-	#print("\n")	
-	#print("%%%%%%%%%%%%%%%Accumulated Wells:", well_cumulative)
-	#print("\n")
 
 	for well in well_cumulative:
-		#print("WHYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
+		print("WHYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
 		if well not in wells_with_fac_data:
+			print("222WHYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
 			wells_with_fac_data.append(well)
 			#print("WELLS WITH FACILITY DATA:", wells_with_fac_data)
 
@@ -447,30 +414,19 @@ def single_facility_OPGEE(facility_summary, OPGEE_data, facility_to_well, geosco
 			if (prod_oil + prod_cond) > 0:
 				OPGEE_data[well][OPGEE_data['headings'].index('Facility gas-to-oil ratio')] = (prod_gas + rec_gas + purrec_gas)/(prod_oil + prod_cond)
 			else:
-				OPGEE_data[well][OPGEE_data['headings'].index('Facility gas-to-oil ratio')] = 0 
-
-			
+				OPGEE_data[well][OPGEE_data['headings'].index('Facility gas-to-oil ratio')] = 0 	
 
 	#Do something about wells with impossible FFV rates 								
 	print('Unique FFV Data added to ' + str(len(wells_with_fac_data)) + ' wells')
 	print('Impossible FFV rates (>100%) were found for ' + str(len(impossible_FFV)) + ' wells')
 	print('Fuel, flare and vent rates for these wells have been set to zero')
 
-
-	#for well in OPGEE_data:
-	#	if well in well_to_fac:
-	#		print(well,well_to_fac[well])
-	#	else:
-	#		print(well,0)
-
 	return OPGEE_data	
 
 
 def AB_single_facility_data_summary(facility_data_headings, selected_facility_data, single_facility_summary):
 
-	
 	#takes in the selected facility data and organises it by date and activity_product type for each well
-
 	print('\nCalculating Single Facility Summary Data')
 	timer = time.time()
 
@@ -480,41 +436,26 @@ def AB_single_facility_data_summary(facility_data_headings, selected_facility_da
 	ProductionMonth_index = facility_data_headings.index('ProductionMonth')
 	Volume_index = facility_data_headings.index('Volume')
 
-
-
 	for facility in selected_facility_data:
-
 		for entry in range(0,len(selected_facility_data[facility])):
-
 			year_month = selected_facility_data[facility][entry][ProductionMonth_index]
-
 			Activity_Product = str(selected_facility_data[facility][entry][ActivityID_index]) + ' ' + str(selected_facility_data[facility][entry][ProductID_index])
 
 			#for a single activity product e.g INJ CO2
 			#if Activity_Product in ['INJ CO2']:
 
 			if facility not in single_facility_summary:
-
 				single_facility_summary[facility] = collections.OrderedDict()
-
 			if year_month not in single_facility_summary[facility]:
-
 				single_facility_summary[facility][year_month] = collections.OrderedDict()
 
 			try:
-
 				if Activity_Product not in single_facility_summary[facility][year_month]:
-
-
 					single_facility_summary[facility][year_month][Activity_Product] = float(selected_facility_data[facility][entry][Volume_index])
-
 				else:
-
 					single_facility_summary[facility][year_month][Activity_Product] = single_facility_summary[facility][year_month][Activity_Product] + float(selected_facility_data[facility][entry][Volume_index])
-
 			except:
-
-					pass
+				continue
 
 
 	print('Computational Time (s): ' + "%.4f" %(time.time() - timer))
@@ -528,10 +469,8 @@ def geoscout_facility_data(selected_facility_data):
 	print('\nImporting AB data from geoSCOUT export\n')
 
 	#only getting the facilities of interest
-
 	geoscout_facility_data = collections.OrderedDict() #Getting data from the csv referenced to facilityID
-	
-	facility_data_file_location = map_to_drive() + "/Project Data_new/geoSCOUT_data/AB_all_facilities.csv"
+	facility_data_file_location = map_to_drive() + "/Project Data/geoSCOUT_data/AB_all_facilities.csv"
 	
 	with open(facility_data_file_location) as f:
 		reader = csv.reader(f)
@@ -551,9 +490,7 @@ def geoscout_facility_info(facility_ID, return_type, geoscout_facility_data, geo
 
 	#takes in a facility ID, return_type geoscout_facility_data, geoscout_facility_data_headings
 	#return type example - 'Sub Type' (single crude battery) or 'Latitude'
-
 	return_value = geoscout_facility_data[facility_ID][geoscout_facility_data_headings.index(return_type)]
-
 	return return_value
 
 #-----------------plot flare data on a map ----------------------
@@ -564,11 +501,8 @@ def facility_summary_print(facility_summary, facility, connected_wells, facility
 	m3_bbl = 6.2898
 
 	#get header data from geoscout for the facility_type_count
-
 	fac_type_index = geoscout_fac_data_headings.index('Sub Type')
-
 	facility_type_count = collections.Counter()
-
 	all_facility_data = facility_summary[facility]
 
 	#count and type of facilty
@@ -664,14 +598,12 @@ def facility_summary_print(facility_summary, facility, connected_wells, facility
 	print('Fuel Gas ("%"); ' + str(round(fuel_percentage*100,3)))
 	print('Flare Gas ("%"); ' + str(round(flare_percentage*100,3)))
 	print('Vent Gas ("%"); ' + str(round(vent_percentage*100,3)))
-
 	print('\nFacility Gas Oil Ratio (scf/bbl); ' + str(round(gas_oil_ratio,2)))
 
 	print('\nFuel Flare Vent Rates (scf/bbl)')
 	print('Fuel Rate (scf/bbl); ' + str(round(fuel_rate,2)))
 	print('Flare Rate (scf/bbl); ' + str(round(flare_rate,2)))
 	print('Vent Rate (scf/bbl); ' + str(round(vent_rate,2)))
-
 	print('\n')
 
 	return
@@ -698,9 +630,7 @@ def AB_facility_analysis(well_data, well_data_headings, OPGEE_data, dates_array)
 
 		selected_facility_data = collections.OrderedDict()
 		facility_connections = collections.OrderedDict() #resets every iteration
-
 		facility_data_headings, all_facility_data, from_to_facility, facility_connection_dates = get_all_monthly_facility_data(year_month, facility_connections,facility_connection_dates)
-
 		formation_facility_list, facility_to_well, connected_wells = AB_formation_facility_list(from_to_facility, well_data, facility_to_well, connected_wells, all_facility_data, facility_data_headings)
 
 		#add conected facilities 
@@ -713,14 +643,13 @@ def AB_facility_analysis(well_data, well_data_headings, OPGEE_data, dates_array)
 		#summary of ALL facility data!
 		facility_summary = AB_facility_data_summary(facility_data_headings, selected_facility_data, facility_summary)
 
-		#summary of single facility data
 		#we can delete this when looking at ALL facilities to save data/time 
-		##facility_summary = AB_single_facility_data_summary(facility_data_headings, selected_facility_data, facility_summary)
+		facility_summary = AB_single_facility_data_summary(facility_data_headings, selected_facility_data, facility_summary)
 
 		del all_facility_data #clear from mem
 
 	geoscout_fac_data, geoscout_fac_data_headings = geoscout_facility_data(facility_summary)
-	
+
 	#print("CONNECTED WELLS:", connected_wells)
 	#print("\nFACILITY TO WELL:", facility_to_well)
 	#print("\n")
@@ -736,15 +665,9 @@ def AB_facility_analysis(well_data, well_data_headings, OPGEE_data, dates_array)
 			print('\nFacility ' + str(facility_summary.keys().index(facility)) + ' of ' + str(len(facility_summary)))
 			facility_summary_print(facility_summary, facility, connected_wells, facility_to_well, geoscout_fac_data, geoscout_fac_data_headings)
 
-	#print(facility_summary['ALL'])
-
 	if formation_facility_list != -1:
-
+		print('HERE')
 		OPGEE_data = single_facility_OPGEE(facility_summary, OPGEE_data, facility_to_well, geoscout_fac_data, geoscout_fac_data_headings, facility_connection_dates)
-
-	# """ """ for well in OPGEE_data:
-	# 	print(well, OPGEE_data[well][OPGEE_data['headings'].index('Facility flared gas')],OPGEE_data[well][OPGEE_data['headings'].index('Facility vented gas')], OPGEE_data[well][OPGEE_data['headings'].index('Facility fuel gas')])						 """	 """	
-						
 
 	return OPGEE_data, facility_summary['ALL'], len(connected_wells), len(facility_summary) - 1
 
@@ -768,7 +691,6 @@ if __name__ == '__main__':
 	#well_data = []
 
 	OPGEE_data = OPGEE_defaults()
-
 	OPGEE_data = OPGEE_well_data(well_data, well_data_headings, OPGEE_data)
 
 	dates_array = dates_array = dates_array('2019-01','2019-02')
@@ -776,8 +698,8 @@ if __name__ == '__main__':
 
 	OPGEE_data, province_facility_total, count_AB_wells, count_AB_facilities = AB_facility_analysis(well_data, well_data_headings, OPGEE_data, dates_array)
 
-	#for well in OPGEE_data:
-	#	print(OPGEE_data['assessed field'][OPGEE_data['headings'].index('Flaring-to-oil ratio')])
-	#	print(OPGEE_data['defaults'][OPGEE_data['headings'].index('Flaring-to-oil ratio')])
+	# for well in OPGEE_data:
+	# 	print(OPGEE_data['assessed field'][OPGEE_data['headings'].index('Flaring-to-oil ratio')])
+	# 	print(OPGEE_data['defaults'][OPGEE_data['headings'].index('Flaring-to-oil ratio')])
 
 	#OPGEE_input_sensitivity(OPGEE_data, well_data)
