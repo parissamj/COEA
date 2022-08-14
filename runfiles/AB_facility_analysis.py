@@ -715,7 +715,7 @@ def AB_facility_analysis(well_data, well_data_headings, OPGEE_data, dates_array)
 
 		#summary of single facility data
 		#we can delete this when looking at ALL facilities to save data/time 
-		##facility_summary = AB_single_facility_data_summary(facility_data_headings, selected_facility_data, facility_summary)
+		facility_summary = AB_single_facility_data_summary(facility_data_headings, selected_facility_data, facility_summary)
 
 		del all_facility_data #clear from mem
 
